@@ -16,18 +16,37 @@
 
 
 // FRAMEWORK CONFIGURATION
-const express=require("express");
-const connectDb=require("./config/dbConnection");
-const errorHandler=require("./middleware/errorHandler");
+
+const express = require("express");
+const connectDb = require("./config/dbConnection"); // Ensure this path is correct
+const errorHandler = require("./middleware/errorHandler"); // Ensure this path is correct
 const cors = require("cors");
+
+// Connect to the database
+
+
+// Create an Express application
+
+// Middleware
+// app.use(express.json());
+// app.use(cors());
+
+// Basic route
+// app.get("/", (req, res) => {
+//     res.send("Hello World");
+// });
+
+// Error handling middleware
+// app.use(errorHandler);
+
+// Start the server
+// app.listen(port, () => {
+//     console.log(Server is running on port ${port});
+// });
+
+// env file config
+const dotenv=require("dotenv");
+dotenv.config();
 connectDb();
-const app=express ();
+const app = express();
 const port = process.env.PORT || 5000;
-app.use(express.json());
-app.use(cors());
-
-app.use(errorHandler);
-
-app.listen(port ,() => {
-    console.log(`Server running on port https://localhost:${port}`);
-});
