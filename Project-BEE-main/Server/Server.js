@@ -104,6 +104,17 @@ app.get("/users",(req,res)=>{
 
     })
 })
+// app.post('/blogs',upload.single('blogimage')),
+//     await newBlog.save()
+//     return res.redirect("\home");
+// })
+// app.get("/blogs",async(req,res)=>{
+//     let allBlogs=await Blog.find();
+//     res.render("Blog",{
+//         blogs:allBlogs
+//     })
+// })
+
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}/`);
