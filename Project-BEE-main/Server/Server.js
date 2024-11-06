@@ -15,7 +15,7 @@
 // FRAMEWORK CONFIGURATION
 
 const express = require("express");
-const connectDb = require("./config/dbConnection"); // Ensure this path is correct
+const connectDb = require("./Config/dbConnection"); // Ensure this path is correct
 const errorHandler = require("./middleware/errorHandler"); // Ensure this path is correct
 const cors = require("cors");
 const hbs=require("hbs")
