@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Persons</title>
 </head>
 <body>
-    this is navbar
+    <h1>List of Persons</h1>
+    {{#each users}}
+        {{> users this}} <!-- Use this to pass the current context -->
+    {{/each}}
 </body>
 </html>

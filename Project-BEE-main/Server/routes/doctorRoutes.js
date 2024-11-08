@@ -1,16 +1,11 @@
-const express = require("express")
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
+const { registerDoctor, getAllDoctors } = require("../controllers/doctorController");
 
-const {
-    doctorRegister,
-    getAllDoctors
-    // loginUser
-} = require("../controllers/doctorController")
+// Route to register a new doctor
+router.post("/register", registerDoctor);
 
-router.get("/", getAllDoctors)
+// Route to get all doctors
+router.get("/", getAllDoctors); // This route fetches all doctor details
 
-router.post("/register", doctorRegister)
-
-// router.post("/login", loginUser)
-
-module.exports = router
+module.exports = router;

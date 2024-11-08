@@ -1,121 +1,84 @@
-// const express = require('express');
-// const app = express();
-
-// // Define the port
-// const PORT = 3000;
-
-// // Create a basic route
-// app.get('/', (req, res) => {
-//   res.send('Hello, Express!');
-// });
-
-
-
-
-// FRAMEWORK CONFIGURATION
-
 const express = require("express");
-const connectDb = require("./Config/dbConnection"); // Ensure this path is correct
-const errorHandler = require("./middleware/errorHandler"); // Ensure this path is correct
+const mongoose = require("mongoose");
+const connectDb = require("./config/dbConnection");
+const errorHandler = require("./middlewares/errorHandler");
 const cors = require("cors");
-const hbs=require("hbs")
-const multer  = require('multer')
-const upload = multer({ dest: 'uploads/' })
-// Connect to the database
+const dotenv = require("dotenv");
+const path = require("path");
+const hbs = require("hbs");
+const multer = require('multer');
+const File = require('./model/File'); // Import the File model
 
-// Create an Express application
-// Middleware
-
-
-// Basic route
-// app.get("/", (req, res) => {
-//     res.send("Hello World");
-// });
-
-// Error handling middleware
-// app.use(errorHandler);
-
-// Start the server
-// app.listen(port, () => {
-//     console.log(Server is running on port ${port});
-// });
-
-// env file configz
-const dotenv=require("dotenv");
 dotenv.config();
-connectDb();
-const app = express();
-app.set('view engine','hbs');
+connectDb(); // Connect to the database
 
-hbs.registerPartials(__dirname + '/views/partials'); // Path to your partials
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Set up Handlebars as the view engine
+app.set('view engine', 'hbs');
+app.set('views', path.join(__dirname, 'views'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-app.use("/api/register",require("./routes/userRoutes"));
-app.use("/api/doctor", require("./routes/doctorRoutes"))
+app.get('/', (req, res) => {
+    res.send('Working');
+});
 
-app.post('/profile', upload.single('avatar'), function (req, res, next) {
-    // req.file is the avatar file
-    // req.body will hold the text fields, if there were any
-    console.log(req.body);
-    console.log(req.file);
-return res.redirect("/home");
-  })
-
+// Configure Multer storage with unique filenames
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, './uploads')
+        cb(null, './uploads'); // Make sure this directory exists
     },
     filename: function (req, file, cb) {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-      cb(null, file.fieldname + '-' + uniqueSuffix)
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix);
     }
-  })
-  
-  const uploads = multer({ storage: storage })
+});
+const upload = multer({ storage: storage });
+
+// Home route to render the page
+app.get("/home", async (req, res) => {
+    // Fetch all uploaded files from MongoDB
+    const files = await File.find();
+    res.render("home", {
+        username: "Jai",
+        users: [{ name: "John Doe", age: 30 }, { name: "Jane Smith", age: 25 }],
+        files: files 
+    });
+});
+
+// Route to handle file upload and save metadata in MongoDB
+app.post('/profile', upload.single('avatar'), async (req, res) => {
+    try {
+        // Create a new file record in MongoDB
+        const fileData = new File({
+            originalName: req.file.originalname,
+            filename: req.file.filename,
+            path: req.file.path,
+            size: req.file.size,
+        });
+
+        await fileData.save(); // Save metadata to MongoDB
+        console.log("File metadata saved:", fileData);
+
+        return res.redirect("/home");
+    } catch (error) {
+        console.error("Error uploading file:", error);
+        res.status(500).send("Error uploading file.");
+    }
+});
 
 
 
-app.get("/home",(req,res)=>{
+// Error handling middleware
+app.use(errorHandler);
 
-    res.render("home",{
-        username:"Krishna",
-        
-    })
-})
-
-const port = process.env.PORT || 5000;
-// jha package.json hoti hai whi installation hoti hai
-
-// Server listens on the defined port
-app.get("/users",(req,res)=>{
-    res.render("users",{
-
-        people:[
-            {
-                username:"Krihsna",
-                age:20
-            },
-            {
-                username:"Lakshay",
-                age:21
-            }
-        ]
-
-    })
-})
-// app.post('/blogs',upload.single('blogimage')),
-//     await newBlog.save()
-//     return res.redirect("\home");
-// })
-// app.get("/blogs",async(req,res)=>{
-//     let allBlogs=await Blog.find();
-//     res.render("Blog",{
-//         blogs:allBlogs
-//     })
-// })
-
-
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}/`);
-  });
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
