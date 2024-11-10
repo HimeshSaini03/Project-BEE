@@ -33,7 +33,7 @@ const registerUser = asyncHandler(async (req, res) => {
         bloodGroup,
         email,
         phoneNumber,
-        password: hashedPassword,
+        password: hashedPassword,r
     });
 
     // Return the created user data without the password
