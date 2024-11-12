@@ -6,56 +6,69 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
 const hbs = require("hbs");
-const multer = require("multer");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const multer = require('multer');
 
-const File = require("./model/File");
-const User = require("./model/userModel"); // Import the User model
+const File = require('./model/File'); // Import the File model
 
 dotenv.config();
-connectDb();
+connectDb(); // Connect to the database
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.set("view engine", "hbs");
-app.set("views", path.join(__dirname, "views"));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Set up Handlebars as the view engine
+app.set('view engine', 'hbs');
+app.set('views', path.join(__dirname, 'views'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-app.get("/", (req, res) => {
-    res.send("Working");
+app.get('/', (req, res) => {
+    res.send('Working');
 });
 
 // Configure Multer storage with unique filenames
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, "./uploads");
+        cb(null, './uploads'); // Make sure this directory exists
     },
     filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-        cb(null, file.fieldname + "-" + uniqueSuffix);
-    },
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix);
+    }
 });
 const upload = multer({ storage: storage });
 
 // Home route to render the page
 app.get("/home", async (req, res) => {
+    // Fetch all uploaded files from MongoDB
     const files = await File.find();
     res.render("home", {
-        username: "Himesh",
-        users: [{ name: "GG", age: 445 }, { name: "hh", age: 87 }],
-        files: files,
+        username: "Jai",
+        users: [{ name: "John Doe", age: 30 }, { name: "Jane Smith", age: 25 }],
+        files: files 
     });
 });
 
+// All users route (Assuming 'users' is defined somewhere)
+app.get("/alluser", (req, res) => {
+    const users = []; // Replace with actual users array
+    res.render("alluser", {
+        users: users, 
+    });
+});
+
+
+app.use("/api/user", require("./routes/userRoutes")); // Registration route
+app.use("/api/doctors", require("./routes/doctorRoutes"));
+
 // Route to handle file upload and save metadata in MongoDB
-app.post("/profile", upload.single("avatar"), async (req, res) => {
+app.post('/profile', upload.single('avatar'), async (req, res) => {
     try {
+        // Create a new file record in MongoDB
         const fileData = new File({
             originalName: req.file.originalname,
             filename: req.file.filename,
@@ -63,7 +76,7 @@ app.post("/profile", upload.single("avatar"), async (req, res) => {
             size: req.file.size,
         });
 
-        await fileData.save();
+        await fileData.save(); // Save metadata to MongoDB
         console.log("File metadata saved:", fileData);
 
         return res.redirect("/home");
@@ -73,67 +86,12 @@ app.post("/profile", upload.single("avatar"), async (req, res) => {
     }
 });
 
-// Register route
-app.post("/api/user/register", async (req, res) => {
-    const { username, email, password } = req.body;
 
-    try {
-        // Check if the user already exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: "User already exists" });
-        }
-
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create a new user
-        const user = new User({
-            username,
-            email,
-            password: hashedPassword ,
-        });
-
-        await user.save();
-        res.status(201).json({ message: "User registered successfully" });
-    } catch (error) {
-        console.error("Error registering user:", error);
-        res.status(500).json({ message: "Error registering user" });
-    }
-});
-
-// Login route
-app.post("/login", async (req, res) => {
-    const { email, password } = req.body;
-
-    try {
-        // Find the user by email
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ message: "Invalid email or password" });
-        }
-
-        // Compare the password
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            return res.status(400).json({ message: "Invalid email or password" });
-        }
-
-        // Generate a JWT token
-        const token = jwt.sign({ userId: user._id }, process.env.PRIVATE_KEY, {
-            expiresIn: "1h",
-        });
-
-        res.status(200).json({ message: "Login successful", token });
-    } catch (error) {
-        console.error("Error logging in:", error);
-        res.status(500).json({ message: "Error logging in" });
-    }
-});
 
 // Error handling middleware
 app.use(errorHandler);
 
+// Start the server
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

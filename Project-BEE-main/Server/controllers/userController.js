@@ -1,7 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const User = require("../model/userModel"); // User model to interact with the database
+const User = require("../model/userModel");
 require("dotenv").config();
 
 // Register a new user
@@ -33,7 +33,7 @@ const registerUser = asyncHandler(async (req, res) => {
         bloodGroup,
         email,
         phoneNumber,
-        password: hashedPassword,r
+        password: hashedPassword,
     });
 
     // Return the created user data without the password
@@ -77,7 +77,7 @@ const loginUser = asyncHandler(async (req, res) => {
     // Create JWT token
     const token = jwt.sign(
         { userId: user._id, username: user.firstName },
-        process.env.JWT_SECRET,
+        process.env.PRIVATE_KEY,
         { expiresIn: "1h" }
     );
 
