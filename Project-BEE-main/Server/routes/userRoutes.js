@@ -10,8 +10,8 @@ router.post("/register", registerUser);
 
 // Route to login a user
 router.post("/login",loginUser);
-router.get("/myAccount",validateJwtToken,myAccount);
-router.put('/myAccount', validateJwtToken, myAccount);
+//router.get("/myAccount",validateJwtToken,myAccount);
+//router.put('/myAccount', validateJwtToken, myAccount);
 router
 
 
